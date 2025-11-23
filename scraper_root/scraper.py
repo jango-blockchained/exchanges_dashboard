@@ -9,6 +9,7 @@ from scraper.binancefutures import BinanceFutures
 from scraper.bybitderivatives import BybitDerivatives
 from scraper.bitgetfutures import BitgetFutures
 from scraper_root.scraper.binancespot import BinanceSpot
+from scraper_root.scraper.blofinfutures import BlofinFutures
 from scraper_root.scraper.data_classes import ScraperConfig, Account
 from scraper_root.scraper.kucoinfutures import KucoinFutures
 from scraper_root.scraper.persistence.repository import Repository
@@ -52,6 +53,8 @@ if __name__ == '__main__':
             scraper = BitgetFutures(account=account, symbols=scraper_config.symbols, repository=repository)
         elif account.exchange == 'kucoin_futures':
             scraper = KucoinFutures(account=account, symbols=scraper_config.symbols, repository=repository)
+        elif account.exchange == 'blofin_futures':
+            scraper = BlofinFutures(account=account, symbols=scraper_config.symbols, repository=repository)
         else:
             raise Exception(f'Encountered unsupported exchange {account.exchange}')
 
