@@ -140,6 +140,9 @@ class Account:
     api_passphrase: str = ''
     exchange: str = ''
     unified: bool = False
+    user_wallet: str = ''
+    signer_wallet: str = ''
+    private_key: str = ''
 
 
 @dataclass

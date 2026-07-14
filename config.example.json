@@ -1,5 +1,5 @@
 // Copy this file to config.json in the root folder
-// supported: binance_futures, bybit_derivatives (NOTE: USDT_Perpetual only), bitget_futures (NOTE: USDT-M only), kucoin_futures, blofin_futures
+// supported: binance_futures, bybit_derivatives (NOTE: USDT_Perpetual only), bitget_futures (NOTE: USDT-M only), kucoin_futures, blofin_futures, asterdex_perps
 
 {
   "accounts": [
@@ -36,6 +36,13 @@
       "api_key": "",
       "api_secret": "",
       "api_passphrase": ""
+    },
+    {
+      "alias": "demo_asterdex",
+      "exchange": "asterdex_perps",
+      "user_wallet": "0xYOUR_MAIN_WALLET_ADDRESS",
+      "signer_wallet": "0xYOUR_API_SIGNER_WALLET_ADDRESS",
+      "private_key": "YOUR_API_SIGNER_PRIVATE_KEY"
     }
   ]
 }
