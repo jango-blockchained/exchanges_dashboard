@@ -18,8 +18,9 @@ def is_asset_usd_or_derivative(asset: str) -> bool:
 
 
 def _params_to_str(params: Dict[str, Any]) -> str:
-    """Sort params by key and join into a query string for EIP-712 signing."""
-    return "&".join(f"{k}={v}" for k, v in sorted(params.items()))
+    """Encode params into a query string for EIP-712 signing, preserving insertion order."""
+    from urllib.parse import urlencode
+    return urlencode(params)
 
 
 EIP712_DOMAIN = {
@@ -55,23 +56,19 @@ class _AsterDexClientV3:
         })
         self._encode_typed_data = encode_typed_data
         self._Account = Account
-        self._last_nonce_ms = 0
+        self._last_nonce_us = 0
         self._nonce_seq = 0
 
     def _next_nonce(self) -> int:
-        now_ms = int(time.time() * 1000)
-        if now_ms == self._last_nonce_ms:
+        now_us = int(time.time() * 1_000_000)
+        if now_us == self._last_nonce_us:
             self._nonce_seq += 1
         else:
-            self._last_nonce_ms = now_ms
+            self._last_nonce_us = now_us
             self._nonce_seq = 0
-        return now_ms * 1_000_000 + self._nonce_seq
+        return now_us + self._nonce_seq
 
     def _sign_eip712(self, params: Dict[str, Any]) -> str:
-        params = dict(params)
-        params["nonce"] = str(self._next_nonce())
-        params["user"] = self.user
-        params["signer"] = self.signer
         param_str = _params_to_str(params)
 
         typed_data = {
@@ -103,17 +100,27 @@ class _AsterDexClientV3:
         params = dict(params or {})
         if signed:
             params["timestamp"] = int(time.time() * 1000)
+            params["nonce"] = str(self._next_nonce())
+            params["user"] = self.user
+            params["signer"] = self.signer
             params["signature"] = self._sign_eip712(params)
 
         method = method.upper()
-        if method == "GET":
-            resp = self.session.get(url, params=params, timeout=30)
-        elif method in ("POST", "PUT", "DELETE"):
-            resp = self.session.request(method, url, data=params, timeout=30)
-        else:
-            raise ValueError(f"Unsupported HTTP method: {method}")
-
-        resp.raise_for_status()
+        try:
+            if method == "GET":
+                resp = self.session.get(url, params=params, timeout=30)
+            elif method in ("POST", "PUT", "DELETE"):
+                resp = self.session.request(method, url, data=params, timeout=30)
+            else:
+                raise ValueError(f"Unsupported HTTP method: {method}")
+            resp.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            try:
+                error_body = e.response.text
+            except Exception:
+                error_body = "<unable to read response body>"
+            logger.error(f"AsterDEX API error on {endpoint}: {e.response.status_code} {error_body}")
+            raise
         return resp.json()
 
     # Public market data

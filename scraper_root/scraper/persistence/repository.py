@@ -146,18 +146,21 @@ class Repository:
                 position_entity.account = account
                 session.add(position_entity)
                 
-            for position in positions:
-                position_history_entity = PositionHistoryEntity()
-                position_history_entity.symbol = position.symbol
-                position_history_entity.side = position.side
-                position_history_entity.quantity = position.position_size
-                position_history_entity.market_price = position.market_price
-                position_history_entity.entryPrice = position.entry_price
-                position_history_entity.unrealizedProfit = position.unrealizedProfit
-                position_history_entity.initialMargin = position.initial_margin
-                position_history_entity.account = account
-                position_history_entity.balance_id = balance.id
-                session.add(position_history_entity)
+            if balance is not None:
+                for position in positions:
+                    position_history_entity = PositionHistoryEntity()
+                    position_history_entity.symbol = position.symbol
+                    position_history_entity.side = position.side
+                    position_history_entity.quantity = position.position_size
+                    position_history_entity.market_price = position.market_price
+                    position_history_entity.entryPrice = position.entry_price
+                    position_history_entity.unrealizedProfit = position.unrealizedProfit
+                    position_history_entity.initialMargin = position.initial_margin
+                    position_history_entity.account = account
+                    position_history_entity.balance_id = balance.id
+                    session.add(position_history_entity)
+            else:
+                logger.warning(f'No balance record found for {account}; skipping position history')
             
             session.commit()
 
